@@ -1,6 +1,5 @@
 import cv2
 import math
-import time
 import numpy as np
 from cvzone.ClassificationModule import Classifier
 from cvzone.HandTrackingModule import HandDetector
@@ -60,8 +59,8 @@ while True:
         cv2.putText(imgOutput, labels[index], (x, y-20), cv2.FONT_HERSHEY_COMPLEX, 2, (255, 0, 255), 2)
         cv2.rectangle(imgOutput, (x - offset, y - offset), (x + w + offset, y + h + offset), (255, 0, 255), 4)
 
-        cv2.imshow('ImageCrop', imgCrop)
-        cv2.imshow('ImageWhite', imgWhite)
+        # cv2.imshow('ImageCrop', imgCrop)
+        # cv2.imshow('ImageWhite', imgWhite)
 
     cv2.imshow('Image', imgOutput)
     key = cv2.waitKey(30)
