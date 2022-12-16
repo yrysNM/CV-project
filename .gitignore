@@ -1,3 +1,5 @@
 /Data
 /.ipynb_checkpoints
 smnist.h5
+
+__pycache__
