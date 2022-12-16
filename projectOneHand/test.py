@@ -17,6 +17,8 @@ labels = ['A', 'B', 'C']
 
 while True: 
     success, img = cap.read()
+    if img is None:
+        break
     imgOutput  = img.copy()
     hands, img = detector.findHands(img)
     if hands: 
@@ -53,14 +55,15 @@ while True:
 
                 prediction, index = classifier.getPrediction(imgWhite, draw=False)
 
+            cv2.putText(imgOutput, labels[index], (x, y-20), cv2.FONT_HERSHEY_COMPLEX, 2, (255, 0, 255), 2)
+            cv2.rectangle(imgOutput, (x - offset, y - offset), (x + w + offset, y + h + offset), (255, 0, 255), 4)
+
+            cv2.imshow('ImageCrop', imgCrop)
+            cv2.imshow('ImageWhite', imgWhite)
         except Exception as e: 
             print(str(e))
-
-        cv2.putText(imgOutput, labels[index], (x, y-20), cv2.FONT_HERSHEY_COMPLEX, 2, (255, 0, 255), 2)
-        cv2.rectangle(imgOutput, (x - offset, y - offset), (x + w + offset, y + h + offset), (255, 0, 255), 4)
-
-        # cv2.imshow('ImageCrop', imgCrop)
-        # cv2.imshow('ImageWhite', imgWhite)
+    else:
+        print("Ne vidno vashih ruk")   
 
     cv2.imshow('Image', imgOutput)
     key = cv2.waitKey(30)
