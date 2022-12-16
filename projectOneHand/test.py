@@ -1,69 +1,63 @@
 import cv2
-import math
 import numpy as np
-from cvzone.ClassificationModule import Classifier
-from cvzone.HandTrackingModule import HandDetector
+import tensorflow as tf
+import os
+import pyttsx3
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+#engine = pyttsx3.init()
 
 
-cap = cv2.VideoCapture(-1)
-detector = HandDetector(maxHands=1)
-classifier = Classifier("Model/keras_model.h5", 'Model/labels.txt')
+# load saved model from PC
+model = tf.keras.models.load_model(r'Model/new_model_20ep3.h5')
+model.summary()
+data_dir = 'Data/'
+#getting the labels form data directory
+labels = sorted(os.listdir(data_dir))
+labels[-1] = 'Nothing'
+print(labels)
 
-offset = 20
-imgSize=300
-counter = 0
+#initiating the video source, 0 for internal camera
+cap = cv2.VideoCapture(0)
+while(True):
+    
+    _ , frame = cap.read()
+    cv2.rectangle(frame, (100, 100), (300, 300), (0, 0, 255), 5) 
 
-labels = ['A', 'B', 'C']
+    roi = frame[100:300, 100:300]
+    img = cv2.resize(roi, (50, 50))
+    cv2.imshow('roi', roi)
+    
 
-while True: 
-    success, img = cap.read()
-    if img is None:
+    img = img/255
+
+    #make predication about the current frame
+    prediction = model.predict(img.reshape(1,50,50,3))
+    char_index = np.argmax(prediction)
+    #print(char_index,prediction[0,char_index]*100)
+
+    confidence = round(prediction[0,char_index]*100, 1)
+    predicted_char = labels[char_index]
+
+    # Initialize the engine 
+    engine = pyttsx3.init() 
+    engine.say(predicted_char) 
+    engine.runAndWait()
+
+    font = cv2.FONT_HERSHEY_TRIPLEX
+    fontScale = 1
+    color = (0,255,255)
+    thickness = 2
+
+    #writing the predicted char and its confidence percentage to the frame
+    msg = predicted_char +', Conf: ' +str(confidence)+' %'
+    cv2.putText(frame, msg, (80, 80), font, fontScale, color, thickness)
+    
+    cv2.imshow('frame',frame)
+    
+    #close the camera when press 'q'
+    if cv2.waitKey(30) & 0xFF == ord('q'):
         break
-    imgOutput  = img.copy()
-    hands, img = detector.findHands(img)
-    if hands: 
-        hand = hands[0]
-        x, y, w, h= hand['bbox']
-
-        imgWhite = np.ones((imgSize, imgSize, 3), np.uint8)*255
-        imgCrop = img[y - offset:y + h + offset, x - offset:x + w + offset]
-
-        imgCropShape = imgCrop.shape
-
-
-        aspectRatio = h/w
-
-        try: 
-            if aspectRatio > 1:
-                k = imgSize / h
-                wCal = math.ceil(k * w)
-                imgResize = cv2.resize(imgCrop, (wCal, imgSize))
-                imgResizeShape = imgResize.shape
-                wGap = math.ceil((imgSize - wCal) / 2)
-                imgWhite[:, wGap:wCal + wGap] = imgResize
-                
-                prediction, index = classifier.getPrediction(imgWhite, draw=False)
-                print(prediction, index)
-
-            else:
-                k = imgSize / w
-                hCal = math.ceil(k * h)
-                imgResize = cv2.resize(imgCrop, (imgSize, hCal))
-                imgResizeShape = imgResize.shape
-                hGap = math.ceil((imgSize - hCal) / 2)
-                imgWhite[hGap:hCal + hGap, :] = imgResize
-
-                prediction, index = classifier.getPrediction(imgWhite, draw=False)
-
-            cv2.putText(imgOutput, labels[index], (x, y-20), cv2.FONT_HERSHEY_COMPLEX, 2, (255, 0, 255), 2)
-            cv2.rectangle(imgOutput, (x - offset, y - offset), (x + w + offset, y + h + offset), (255, 0, 255), 4)
-
-            cv2.imshow('ImageCrop', imgCrop)
-            cv2.imshow('ImageWhite', imgWhite)
-        except Exception as e: 
-            print(str(e))
-    else:
-        print("Ne vidno vashih ruk")   
-
-    cv2.imshow('Image', imgOutput)
-    key = cv2.waitKey(30)
+        
+#release the camera and close all windows
+cap.release()
+cv2.destroyAllWindows()
