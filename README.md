@@ -20,5 +20,4 @@ now you can run the project directly from your terminal:
 python main.py
 ```
 If everything has gone right, a window will  pop up as in the below figure:
-[![virtual painter demo (python, openCV and mediapipe)](./images/t.png)]
-") 
+![virtual painter demo (python, openCV and mediapipe)](./images/t.png)

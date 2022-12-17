@@ -105,7 +105,7 @@ while True:
 
     if coolingCounter:
         coolingCounter -=1
-        #print(coolingCounter)
+        # print(coolingCounter)
 
     ret, frame = cap.read()
     if not ret:
@@ -186,6 +186,7 @@ while True:
                 #drawing on the canvas
                 if px == 0 and py == 0:
                     px, py = positions[8]
+                # eraser for colors
                 if color == (0,0,0):
                     cv2.line(canvas, (px,py), positions[8], color, eraserSize)
                 else:
